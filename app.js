@@ -1,19 +1,43 @@
 /**
- * Key Measure Sidebar — Interactive Prototype v4
+ * Key Measure Sidebar — Interactive Prototype v6
  *
  * UNRESTRICTED DRAG-AND-DROP:
  *  - Categories can be reordered
  *  - Subcategories can be moved between ANY Categories (not just reordered within same)
  *  - Key Measures can be moved between ANY Subcategories (cross-Category allowed)
- *  - Key Measures can be dragged directly onto a Category header (placed into first Subcategory, or auto-created "Uncategorized")
+ *  - Key Measures can be dropped directly onto Category headers (category-level KMs)
+ *  - Key Measures can be dropped onto collapsed Subcategory headers (auto-expands)
  *
  * Color coding for insertion lines:
  *  - Green (#388e3c)  = Category reorder
  *  - Orange (#ff9800) = Subcategory reorder/move
- *  - Blue (#1565c0)   = Key Measure reorder/move
+ *  - Blue (#1565c0)   = Key Measure reorder/move & Subcategory header KM-drop highlight
+ *
+ * ─── DESIGN DECISION: Option B — PTO Category Ordering ───
+ *
+ * Category ordering in PTO (Plan Takeoff) is INDEPENDENT from PLBM
+ * (Pipeline LBM / Lumber Builder Manager):
+ *
+ *  1. On first load, PTO defaults to the PLBM category order.
+ *     The initial `data` array mirrors KEY_MEASURE_DATA which reflects
+ *     the PLBM-defined Categories and their sort order.
+ *
+ *  2. When a user reorders Categories (via drag-and-drop green handles),
+ *     the new order is persisted as a PTO-only preference. It does NOT
+ *     write back to PLBM or affect other users' PLBM views.
+ *
+ *  3. PLBM category order remains unchanged regardless of PTO reordering.
+ *     If PLBM later adds/removes categories, PTO merges them into the
+ *     user's custom order (new categories appended at the bottom).
+ *
+ *  This means the `data` array in this prototype represents the user's
+ *  PTO-local ordering, not the canonical PLBM order.
+ * ──────────────────────────────────────────────────────────
  */
 
 // ===== State =====
+// Deep-clone PLBM data on first load. After this point, `data` is the PTO-local
+// copy. Reordering categories here does NOT affect the PLBM source (Option B).
 let data = JSON.parse(JSON.stringify(KEY_MEASURE_DATA));
 let dragState = null;
 
@@ -188,6 +212,13 @@ function render(filter = '') {
       scHeader.addEventListener('dragstart', (e) => onSubcategoryDragStart(e, sc, cat));
       scHeader.addEventListener('dragend', onDragEnd);
 
+      // Subcategory header accepts KM drops — works even when collapsed.
+      // When collapsed, the children container (display:none) can't receive drag events,
+      // so the header itself acts as the drop target for Key Measures.
+      scHeader.addEventListener('dragover', (e) => onSubcategoryHeaderKMDragOver(e, scHeader, sc, cat));
+      scHeader.addEventListener('dragleave', (e) => onSubcategoryHeaderKMDragLeave(e, scHeader));
+      scHeader.addEventListener('drop', (e) => onSubcategoryHeaderKMDrop(e, scHeader, sc, cat));
+
       scEl.appendChild(scHeader);
 
       // Key Measures container
@@ -317,7 +348,7 @@ function getInsertBeforeElement(items, y) {
 
 function clearAllIndicators() {
   document.querySelectorAll('.drop-indicator, .subcategory-drop-zone, .category-drop-zone').forEach(el => el.remove());
-  document.querySelectorAll('.drop-target-highlight, .drop-invalid').forEach(el => el.classList.remove('drop-target-highlight', 'drop-invalid'));
+  document.querySelectorAll('.drop-target-highlight, .drop-invalid, .sc-km-drop-ready').forEach(el => el.classList.remove('drop-target-highlight', 'drop-invalid', 'sc-km-drop-ready'));
 }
 function clearIndicators(container) { container.querySelectorAll('.drop-indicator').forEach(el => el.remove()); }
 function clearSubcategoryIndicators(container) { container.querySelectorAll('.subcategory-drop-zone').forEach(el => el.remove()); }
@@ -369,6 +400,8 @@ function onCategoryDrop(e, catEl, targetCat) {
   const toIdx = data.findIndex(c => c.id === targetCat.id);
   if (fromIdx < 0 || toIdx < 0) return;
 
+  // Option B: reorder in the PTO-local `data` array only.
+  // This change is persisted as a PTO preference and does NOT propagate to PLBM.
   const [moved] = data.splice(fromIdx, 1);
   data.splice(toIdx, 0, moved);
   showToast(`Reordered "${moved.name}"`, 'success');
@@ -538,6 +571,62 @@ function onSubcategoryDrop(e, targetSc, targetCat) {
 
   const action = sourceCat.id === targetCat.id ? 'Reordered' : 'Moved';
   showToast(`${action} "${moved.name}" ${action === 'Moved' ? 'to ' + realTargetCat.name : 'in ' + realTargetCat.name}`, 'success');
+  render(document.getElementById('km-search').value);
+}
+
+
+// ======================================================
+//  2b. SUBCATEGORY HEADER AS KM DROP TARGET
+//      Enables dropping Key Measures onto collapsed (or expanded) Subcategory headers.
+//      When a Subcategory is collapsed its children container has display:none,
+//      so normal KM drop zones inside it are unreachable. The header itself
+//      acts as a fallback drop target, appending the KM to the end of the
+//      Subcategory's keyMeasures list and auto-expanding it.
+// ======================================================
+function onSubcategoryHeaderKMDragOver(e, scHeader, sc, cat) {
+  if (!dragState || dragState.type !== 'keymeasure') return;
+  // Don't intercept if user is dragging the same KM back onto its own parent sc
+  // (let normal reorder handle that when expanded)
+  e.preventDefault();
+  e.stopPropagation();
+  e.dataTransfer.dropEffect = 'move';
+  scHeader.classList.add('drop-target-highlight', 'sc-km-drop-ready');
+}
+
+function onSubcategoryHeaderKMDragLeave(e, scHeader) {
+  scHeader.classList.remove('drop-target-highlight', 'sc-km-drop-ready');
+}
+
+function onSubcategoryHeaderKMDrop(e, scHeader, sc, cat) {
+  e.preventDefault();
+  e.stopPropagation();
+  scHeader.classList.remove('drop-target-highlight', 'sc-km-drop-ready');
+  if (!dragState || dragState.type !== 'keymeasure') return;
+
+  const kmObj = findKM(dragState.id);
+  const wasActive = kmObj ? kmObj.active : false;
+  const removed = removeKM(dragState.id);
+  if (!removed) return;
+  if (wasActive) removed.active = true;
+
+  const realSc = findSubcategory(sc.id);
+  if (!realSc) return;
+
+  // Append to end of this Subcategory's KM list
+  realSc.keyMeasures.push(removed);
+
+  // Auto-expand the target subcategory and its parent category so the user
+  // can see where the KM landed
+  realSc.expanded = true;
+  const realCat = findCategory(cat.id);
+  if (realCat) realCat.expanded = true;
+
+  const crossCategory = dragState.sourceCatId !== cat.id;
+  const catName = realCat ? realCat.name : '';
+  const msg = crossCategory
+    ? `Moved "${removed.name}" to ${catName} → ${realSc.name}`
+    : `Moved "${removed.name}" to ${realSc.name}`;
+  showToast(msg, 'success');
   render(document.getElementById('km-search').value);
 }
 
