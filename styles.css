@@ -1,0 +1,142 @@
+/* ======= Reset & Base ======= */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 13px; color: #333; background: #f0f1f3; overflow: hidden; }
+
+/* ======= Toolbar ======= */
+.toolbar { display: flex; align-items: center; justify-content: space-between; height: 42px; background: #fff; border-bottom: 1px solid #ddd; padding: 0 12px; z-index: 100; }
+.toolbar-left { display: flex; align-items: center; gap: 8px; }
+.app-icon { color: #1a73e8; font-size: 18px; }
+.app-title { font-weight: 600; font-size: 14px; }
+.toolbar-dots { color: #888; cursor: pointer; }
+.toolbar-center { display: flex; gap: 2px; }
+.tool-btn { background: #f5f5f5; border: 1px solid #ddd; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: all .15s; }
+.tool-btn:hover { background: #e8e8e8; }
+.tool-btn.active { background: #e3f2fd; border-color: #90caf9; color: #1565c0; }
+.toolbar-right { display: flex; align-items: center; gap: 8px; }
+.sync-badge { color: #2e7d32; font-size: 12px; }
+.sync-badge i { margin-right: 4px; }
+
+/* ======= Main Layout ======= */
+.main-layout { display: flex; height: calc(100vh - 42px); }
+
+/* ======= Left Sheets Panel ======= */
+.sheets-panel { width: 220px; min-width: 220px; background: #fff; border-right: 1px solid #ddd; display: flex; flex-direction: column; overflow: hidden; }
+.panel-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; font-weight: 600; font-size: 13px; border-bottom: 1px solid #eee; }
+.search-box { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-bottom: 1px solid #eee; }
+.search-box input { border: none; outline: none; font-size: 12px; width: 100%; background: transparent; }
+.search-box i { color: #999; font-size: 11px; }
+.sheet-list { list-style: none; overflow-y: auto; flex: 1; padding: 4px 0; }
+.sheet-list li { padding: 5px 12px 5px 24px; cursor: pointer; font-size: 12px; color: #555; transition: background .12s; }
+.sheet-list li:hover { background: #f0f4ff; }
+.sheet-list li.active-sheet { background: #e3f2fd; color: #1565c0; font-weight: 600; }
+.sheet-list li.sheet-parent { padding-left: 12px; font-weight: 500; }
+
+/* ======= Blueprint Center ======= */
+.blueprint-area { flex: 1; display: flex; flex-direction: column; background: #666; position: relative; }
+.blueprint-content { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.blueprint-placeholder { position: relative; text-align: center; }
+.overlay-label { position: absolute; bottom: 30%; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.6); font-size: 22px; font-weight: 600; text-align: center; letter-spacing: 2px; }
+.status-bar { height: 28px; background: #fff; border-top: 1px solid #ddd; display: flex; align-items: center; gap: 18px; padding: 0 14px; font-size: 11px; color: #666; }
+.status-bar .on { color: #1b5e20; background: #c8e6c9; padding: 1px 6px; border-radius: 3px; font-size: 10px; }
+
+/* ======= Right Key Measure Panel ======= */
+.keymeasure-panel { width: 310px; min-width: 280px; max-width: 400px; background: #fff; border-left: 1px solid #ddd; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+.tab-bar { display: flex; gap: 0; }
+.tab { flex: 1; padding: 9px 10px; font-size: 12px; font-weight: 600; border: none; background: #f5f5f5; cursor: pointer; transition: all .15s; border-bottom: 2px solid transparent; }
+.tab.active { background: #fff; color: #1565c0; border-bottom-color: #1565c0; }
+.tab:hover:not(.active) { background: #eee; }
+.panel-dots { padding: 0 8px; color: #888; cursor: pointer; display: flex; align-items: center; }
+
+/* ======= Key Measure Tree ======= */
+.km-tree { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 4px 0; }
+
+/* Category row */
+.km-category { border-bottom: 1px solid #f0f0f0; }
+.km-category-header { display: flex; align-items: center; padding: 7px 10px; cursor: pointer; user-select: none; transition: background .12s; position: relative; }
+.km-category-header:hover { background: #f7f9fc; }
+.km-category-header .caret { width: 16px; text-align: center; font-size: 10px; color: #999; transition: transform .2s; margin-right: 4px; flex-shrink: 0; }
+.km-category-header .caret.open { transform: rotate(90deg); }
+.km-category-header .color-swatch { width: 14px; height: 14px; border-radius: 3px; margin-right: 8px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.08); }
+.km-category-header .cat-name { font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; flex: 1; }
+.km-category-header .cat-count { font-size: 10px; color: #999; margin-left: auto; padding-left: 4px; }
+
+/* Category lock icon — shows it's non-draggable */
+.km-category-header .lock-icon { font-size: 9px; color: #ccc; margin-left: 6px; opacity: 0; transition: opacity .2s; }
+.km-category-header:hover .lock-icon { opacity: 1; }
+
+/* Subfolder row */
+.km-subfolder { }
+.km-subfolder-header { display: flex; align-items: center; padding: 6px 10px 6px 30px; cursor: grab; user-select: none; transition: all .15s; position: relative; }
+.km-subfolder-header:hover { background: #f0f4ff; }
+.km-subfolder-header .caret { width: 14px; text-align: center; font-size: 9px; color: #aaa; transition: transform .2s; margin-right: 4px; flex-shrink: 0; }
+.km-subfolder-header .caret.open { transform: rotate(90deg); }
+.km-subfolder-header .folder-icon { color: #e8a838; margin-right: 6px; font-size: 12px; }
+.km-subfolder-header .sf-name { font-weight: 500; font-size: 12px; flex: 1; }
+.km-subfolder-header .sf-count { font-size: 10px; color: #aaa; }
+
+/* Drag handle on subfolder */
+.km-subfolder-header .drag-handle { opacity: 0; color: #bbb; margin-right: 4px; font-size: 11px; transition: opacity .15s; cursor: grab; }
+.km-subfolder-header:hover .drag-handle { opacity: 1; }
+
+/* Key Measure item */
+.km-item { display: flex; align-items: center; padding: 5px 10px 5px 52px; cursor: grab; user-select: none; transition: all .15s; position: relative; }
+.km-item:hover { background: #f0f6ff; }
+.km-item .drag-handle { opacity: 0; color: #ccc; margin-right: 6px; font-size: 10px; transition: opacity .15s; cursor: grab; }
+.km-item:hover .drag-handle { opacity: 1; }
+.km-item .km-color { width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.06); }
+.km-item .km-name { font-size: 12px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.km-item .km-tool-badge { font-size: 9px; color: #888; background: #f0f0f0; padding: 1px 5px; border-radius: 3px; margin-left: 4px; flex-shrink: 0; }
+
+/* Active Key Measure (currently being measured) */
+.km-item.active-measure { background: #e8f5e9; border-left: 3px solid #43a047; padding-left: 49px; }
+.km-item.active-measure .km-name { font-weight: 600; color: #2e7d32; }
+.km-item.active-measure::after { content: '● measuring'; font-size: 9px; color: #43a047; margin-left: 6px; animation: pulse-dot 1.5s infinite; }
+@keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* ======= Drag & Drop Visual Feedback ======= */
+
+/* Drop zone indicator — horizontal line */
+.drop-indicator { height: 2px; background: #1565c0; border-radius: 1px; margin: 0 8px; position: relative; pointer-events: none; transition: opacity .1s; }
+.drop-indicator::before { content: ''; position: absolute; left: -4px; top: -3px; width: 8px; height: 8px; background: #1565c0; border-radius: 50%; }
+.drop-indicator::after { content: ''; position: absolute; right: -4px; top: -3px; width: 8px; height: 8px; background: #1565c0; border-radius: 50%; }
+
+/* Drop zone highlight on subfolder when item is being dragged over */
+.drop-target-highlight { background: #e3f2fd !important; outline: 2px dashed #90caf9; outline-offset: -2px; border-radius: 3px; }
+
+/* Category highlight when invalid drop target */
+.drop-invalid { background: #ffebee !important; outline: 2px dashed #ef9a9a; outline-offset: -2px; border-radius: 3px; }
+
+/* Dragging state */
+.dragging { opacity: 0.35; background: #f5f5f5; }
+
+/* Ghost element */
+.drag-ghost { position: fixed; pointer-events: none; z-index: 10000; padding: 6px 14px; background: #fff; border: 1px solid #1565c0; border-radius: 5px; box-shadow: 0 4px 16px rgba(0,0,0,0.18); font-size: 12px; font-weight: 500; color: #1565c0; display: none; white-space: nowrap; max-width: 250px; overflow: hidden; text-overflow: ellipsis; }
+.drag-ghost.visible { display: block; }
+.drag-ghost .ghost-icon { margin-right: 6px; }
+
+/* Subfolder drop zone (when dragging subfolders) */
+.subfolder-drop-zone { height: 2px; background: #ff9800; border-radius: 1px; margin: 0 24px; position: relative; pointer-events: none; }
+.subfolder-drop-zone::before { content: ''; position: absolute; left: -4px; top: -3px; width: 8px; height: 8px; background: #ff9800; border-radius: 50%; }
+.subfolder-drop-zone::after { content: ''; position: absolute; right: -4px; top: -3px; width: 8px; height: 8px; background: #ff9800; border-radius: 50%; }
+
+/* ======= Toast ======= */
+.toast-container { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 500; pointer-events: none; }
+.toast { background: #323232; color: #fff; padding: 8px 18px; border-radius: 6px; font-size: 12px; white-space: nowrap; opacity: 0; transform: translateY(10px); transition: all .25s; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.warn { background: #d32f2f; }
+.toast.success { background: #2e7d32; }
+
+/* ======= Scrollbar ======= */
+.km-tree::-webkit-scrollbar, .sheet-list::-webkit-scrollbar { width: 6px; }
+.km-tree::-webkit-scrollbar-thumb, .sheet-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+.km-tree::-webkit-scrollbar-thumb:hover, .sheet-list::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+/* ======= Collapsed children ======= */
+.km-children { overflow: hidden; }
+.km-children.collapsed { display: none; }
+
+/* ======= Responsive tweaks ======= */
+@media (max-width: 900px) {
+  .sheets-panel { display: none; }
+  .keymeasure-panel { width: 260px; min-width: 220px; }
+}

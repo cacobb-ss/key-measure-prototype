@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Key Measure Sidebar — Interactive Prototype</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <!-- ===== Top Toolbar ===== -->
+  <header class="toolbar">
+    <div class="toolbar-left">
+      <i class="fa-solid fa-cube app-icon"></i>
+      <span class="app-title">BDT House</span>
+      <span class="toolbar-dots">•••</span>
+    </div>
+    <div class="toolbar-center">
+      <button class="tool-btn active">Dimension Tool <i class="fa-solid fa-caret-down"></i></button>
+      <button class="tool-btn">Joist/Rafter Tool</button>
+      <button class="tool-btn">Beam/Header Tool</button>
+      <button class="tool-btn">Annotations <i class="fa-solid fa-caret-down"></i></button>
+    </div>
+    <div class="toolbar-right">
+      <span class="sync-badge"><i class="fa-solid fa-circle-check"></i> Quantities Synced</span>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <!-- ===== Left Sheets Panel ===== -->
+    <aside class="sheets-panel">
+      <div class="panel-header">
+        <span><i class="fa-regular fa-square"></i> Sheets</span>
+        <span>•••</span>
+      </div>
+      <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" placeholder="Search..."></div>
+      <ul class="sheet-list">
+        <li>Sheet_1.1</li><li>Sheet_1.2</li>
+        <li class="active-sheet">Sheet_1.3</li>
+        <li>Sheet_1.4</li><li>Sheet_1.5</li><li>Sheet_1.6</li><li>Sheet_1.7</li>
+        <li class="sheet-parent"><i class="fa-solid fa-caret-right"></i> First Floor Plan</li>
+        <li>Sheet_1.9</li><li>Sheet_1.10</li><li>Roof plan</li><li>Sheet_1.12</li>
+        <li>Sheet_1.13</li><li>Sheet_1.14</li>
+      </ul>
+    </aside>
+
+    <!-- ===== Center Blueprint Area ===== -->
+    <main class="blueprint-area">
+      <div class="blueprint-content">
+        <div class="blueprint-placeholder">
+          <img src="/home/ubuntu/Uploads/image.png" alt="Blueprint" style="max-width:100%;opacity:0.15;pointer-events:none;">
+          <div class="overlay-label">REAR ELEVATION<br><small>SCALE: 1/8"=1'-0"</small></div>
+        </div>
+      </div>
+      <div class="status-bar">
+        <span>Scale: 1/4" = 1'0"</span>
+        <span>Tool: No Tool Selected</span>
+        <span>Toolbar: <b class="on">ON</b></span>
+        <span>Snap: <b class="on">ON</b></span>
+        <span>Ortho: <b class="on">ON</b></span>
+      </div>
+    </main>
+
+    <!-- ===== Right Key Measure Sidebar ===== -->
+    <aside class="keymeasure-panel" id="keymeasure-panel">
+      <div class="panel-header">
+        <div class="tab-bar">
+          <button class="tab active" id="tab-keymeasure">Key Measure</button>
+          <button class="tab" id="tab-sections">Sections</button>
+        </div>
+        <span class="panel-dots">•••</span>
+      </div>
+      <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" placeholder="Search..." id="km-search"></div>
+      <div class="km-tree" id="km-tree">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Toast notification area -->
+      <div class="toast-container" id="toast-container"></div>
+    </aside>
+  </div>
+
+  <!-- Drag ghost element -->
+  <div class="drag-ghost" id="drag-ghost"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
