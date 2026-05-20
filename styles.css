@@ -62,8 +62,10 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
 
 /* Category row */
 .km-category { }
-.km-category-header { display: flex; align-items: center; padding: 8px 8px 8px 10px; cursor: pointer; user-select: none; transition: background .12s; position: relative; }
+.km-category-header { display: flex; align-items: center; padding: 8px 8px 8px 6px; cursor: pointer; user-select: none; transition: background .12s; position: relative; }
 .km-category-header:hover { background: #f5f7fa; }
+.km-category-header .cat-drag-handle { opacity: 0; color: #aaa; margin-right: 2px; font-size: 11px; transition: opacity .15s; cursor: grab; flex-shrink: 0; }
+.km-category-header:hover .cat-drag-handle { opacity: 1; }
 .km-category-header .caret { width: 16px; text-align: center; font-size: 10px; color: #888; transition: transform .2s; margin-right: 4px; flex-shrink: 0; }
 .km-category-header .caret.open { transform: rotate(90deg); }
 .km-category-header .folder-icon { color: #8a9bb0; margin-right: 6px; font-size: 13px; flex-shrink: 0; }
@@ -115,10 +117,15 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
 .drag-ghost.visible { display: block; }
 .drag-ghost .ghost-icon { margin-right: 6px; }
 
-/* Subcategory drop zone */
+/* Subcategory drop zone (orange) */
 .subcategory-drop-zone { height: 2px; background: #ff9800; border-radius: 1px; margin: 0 24px; position: relative; pointer-events: none; }
 .subcategory-drop-zone::before { content: ''; position: absolute; left: -4px; top: -3px; width: 8px; height: 8px; background: #ff9800; border-radius: 50%; }
 .subcategory-drop-zone::after { content: ''; position: absolute; right: -4px; top: -3px; width: 8px; height: 8px; background: #ff9800; border-radius: 50%; }
+
+/* Category drop zone (green) */
+.category-drop-zone { height: 3px; background: #388e3c; border-radius: 1px; margin: 2px 4px; position: relative; pointer-events: none; }
+.category-drop-zone::before { content: ''; position: absolute; left: -5px; top: -4px; width: 10px; height: 10px; background: #388e3c; border-radius: 50%; }
+.category-drop-zone::after { content: ''; position: absolute; right: -5px; top: -4px; width: 10px; height: 10px; background: #388e3c; border-radius: 50%; }
 
 /* ======= Toast ======= */
 .toast-container { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 500; pointer-events: none; }
