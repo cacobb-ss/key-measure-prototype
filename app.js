@@ -38,7 +38,8 @@ function render(filter = '') {
       return { ...sc, keyMeasures: filteredKMs };
     }).filter(sc => sc.keyMeasures.length > 0 || sc.name.toLowerCase().includes(lc));
 
-    if (lc && visibleSubcategories.length === 0 && !cat.name.toLowerCase().includes(lc)) return;
+    const catLevelKMMatch = lc && (cat.keyMeasures || []).some(km => km.name.toLowerCase().includes(lc));
+    if (lc && visibleSubcategories.length === 0 && !cat.name.toLowerCase().includes(lc) && !catLevelKMMatch) return;
 
     const catEl = document.createElement('div');
     catEl.className = 'km-category';
@@ -55,22 +56,46 @@ function render(filter = '') {
       <span class="caret ${cat.expanded ? 'open' : ''}"><i class="fa-solid fa-caret-right"></i></span>
       <i class="fa-regular fa-folder-open folder-icon"></i>
       <span class="cat-name">${cat.name}</span>
-      <button class="add-btn" data-action="add-subcategory" data-cat-id="${cat.id}" title="Add subcategory to ${cat.name}"><i class="fa-solid fa-plus"></i></button>
+      <div class="cat-add-dropdown-wrapper">
+        <button class="add-btn" data-action="cat-add-menu" data-cat-id="${cat.id}" title="Add to ${cat.name}"><i class="fa-solid fa-plus"></i></button>
+        <div class="cat-add-dropdown" data-cat-id="${cat.id}">
+          <div class="cat-add-dropdown-item" data-action="add-subcategory"><i class="fa-regular fa-folder"></i> Create Subcategory</div>
+          <div class="cat-add-dropdown-item" data-action="add-km-to-cat"><i class="fa-solid fa-ruler-combined"></i> Create Key Measure</div>
+        </div>
+      </div>
     `;
 
     // Category drag start
     catHeader.addEventListener('dragstart', (e) => onCategoryDragStart(e, cat));
     catHeader.addEventListener('dragend', onDragEnd);
 
-    // Toggle expand (but not on + button or drag handle)
+    // Toggle expand (but not on + button, drag handle, or dropdown)
     catHeader.addEventListener('click', (e) => {
-      if (e.target.closest('.add-btn') || e.target.closest('.drag-handle')) return;
+      if (e.target.closest('.add-btn') || e.target.closest('.drag-handle') || e.target.closest('.cat-add-dropdown')) return;
       cat.expanded = !cat.expanded;
       render(filter);
     });
-    catHeader.querySelector('.add-btn').addEventListener('click', (e) => {
+
+    // Dropdown toggle
+    const addBtn = catHeader.querySelector('.add-btn');
+    const dropdown = catHeader.querySelector('.cat-add-dropdown');
+    addBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      // Close any other open dropdowns
+      document.querySelectorAll('.cat-add-dropdown.open').forEach(d => { if (d !== dropdown) d.classList.remove('open'); });
+      dropdown.classList.toggle('open');
+    });
+
+    // Dropdown item clicks
+    dropdown.querySelector('[data-action="add-subcategory"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.remove('open');
       showAddSubcategoryModal(cat);
+    });
+    dropdown.querySelector('[data-action="add-km-to-cat"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.remove('open');
+      showAddKMToCategoryModal(cat);
     });
 
     // Category header as drop target for: category reorder, subcategory move-into, KM direct drop
@@ -89,6 +114,46 @@ function render(filter = '') {
     childrenEl.addEventListener('dragover', (e) => onCategoryChildrenDragOver(e, childrenEl, cat));
     childrenEl.addEventListener('dragleave', (e) => { childrenEl.classList.remove('drop-target-highlight'); });
     childrenEl.addEventListener('drop', (e) => onCategoryChildrenDrop(e, childrenEl, cat));
+
+    // ── Category-level Key Measures (not in any subcategory) ──
+    const catKMs = cat.keyMeasures || [];
+    const filteredCatKMs = lc ? catKMs.filter(km => km.name.toLowerCase().includes(lc) || cat.name.toLowerCase().includes(lc)) : catKMs;
+    if (filteredCatKMs.length > 0) {
+      const catKMsContainer = document.createElement('div');
+      catKMsContainer.className = 'km-cat-level-kms';
+      catKMsContainer.dataset.catId = cat.id;
+      catKMsContainer.dataset.level = 'category';
+
+      // DnD: accept KM drops into category-level area
+      catKMsContainer.addEventListener('dragover', (e) => onCatLevelKMDragOver(e, catKMsContainer, cat));
+      catKMsContainer.addEventListener('dragleave', (e) => onCatLevelKMDragLeave(e, catKMsContainer));
+      catKMsContainer.addEventListener('drop', (e) => onCatLevelKMDrop(e, catKMsContainer, cat));
+
+      filteredCatKMs.forEach(km => {
+        const kmEl = document.createElement('div');
+        kmEl.className = 'km-item cat-level-km' + (km.active ? ' active-measure' : '');
+        kmEl.draggable = true;
+        kmEl.dataset.kmId = km.id;
+        kmEl.dataset.catId = cat.id;
+        kmEl.dataset.level = 'category';
+
+        const iconClass = TOOL_ICONS[km.toolType] || 'fa-solid fa-circle';
+        kmEl.innerHTML = `
+          <span class="drag-handle"><i class="fa-solid fa-grip-vertical"></i></span>
+          <i class="${iconClass} km-tool-icon"></i>
+          <span class="km-name" title="${km.name}">${km.name}</span>
+          <span class="km-color-bar" style="background:${km.colorCode}"></span>
+        `;
+
+        kmEl.addEventListener('dragstart', (e) => onCatLevelKMDragStart(e, km, cat));
+        kmEl.addEventListener('dragend', onDragEnd);
+        kmEl.addEventListener('click', () => { toggleActive(km); render(filter); });
+
+        catKMsContainer.appendChild(kmEl);
+      });
+
+      childrenEl.appendChild(catKMsContainer);
+    }
 
     (lc ? visibleSubcategories : cat.subcategories).forEach(sc => {
       const scEl = document.createElement('div');
@@ -189,13 +254,24 @@ function findSubcategory(scId) {
   return null;
 }
 function findKM(kmId) {
-  for (const cat of data) for (const sc of cat.subcategories) { const km = sc.keyMeasures.find(k => k.id === kmId); if (km) return km; }
+  for (const cat of data) {
+    // Check category-level KMs
+    if (cat.keyMeasures) { const km = cat.keyMeasures.find(k => k.id === kmId); if (km) return km; }
+    for (const sc of cat.subcategories) { const km = sc.keyMeasures.find(k => k.id === kmId); if (km) return km; }
+  }
   return null;
 }
 function removeKM(kmId) {
-  for (const cat of data) for (const sc of cat.subcategories) {
-    const idx = sc.keyMeasures.findIndex(k => k.id === kmId);
-    if (idx >= 0) return sc.keyMeasures.splice(idx, 1)[0];
+  for (const cat of data) {
+    // Check category-level KMs
+    if (cat.keyMeasures) {
+      const idx = cat.keyMeasures.findIndex(k => k.id === kmId);
+      if (idx >= 0) return cat.keyMeasures.splice(idx, 1)[0];
+    }
+    for (const sc of cat.subcategories) {
+      const idx = sc.keyMeasures.findIndex(k => k.id === kmId);
+      if (idx >= 0) return sc.keyMeasures.splice(idx, 1)[0];
+    }
   }
 }
 function removeSubcategory(scId) {
@@ -207,7 +283,10 @@ function removeSubcategory(scId) {
 
 function toggleActive(km) {
   const wasActive = km.active;
-  data.forEach(c => c.subcategories.forEach(s => s.keyMeasures.forEach(k => k.active = false)));
+  data.forEach(c => {
+    if (c.keyMeasures) c.keyMeasures.forEach(k => k.active = false);
+    c.subcategories.forEach(s => s.keyMeasures.forEach(k => k.active = false));
+  });
   if (!wasActive) { km.active = true; showToast(`Now measuring: ${km.name}`, 'success'); }
   else { showToast('Measurement stopped', ''); }
 }
@@ -345,7 +424,7 @@ function onCategoryHeaderDrop(e, catHeader, cat) {
     return;
   }
 
-  // Key measure dropped onto category header → place in first subcategory or auto-create one
+  // Key measure dropped onto category header → place directly in category-level keyMeasures
   if (dragState.type === 'keymeasure') {
     const kmObj = findKM(dragState.id);
     const wasActive = kmObj ? kmObj.active : false;
@@ -353,22 +432,10 @@ function onCategoryHeaderDrop(e, catHeader, cat) {
     if (!removed) return;
     if (wasActive) removed.active = true;
 
-    if (realCat.subcategories.length === 0) {
-      // Auto-create an "Uncategorized" subcategory
-      realCat.subcategories.push({
-        id: 'sc-auto-' + Date.now(),
-        name: 'Uncategorized',
-        type: 'subcategory',
-        categoryId: cat.id,
-        expanded: true,
-        keyMeasures: []
-      });
-    }
-    // Place in first subcategory
-    realCat.subcategories[0].keyMeasures.push(removed);
-    realCat.subcategories[0].expanded = true;
+    if (!realCat.keyMeasures) realCat.keyMeasures = [];
+    realCat.keyMeasures.push(removed);
     realCat.expanded = true;
-    showToast(`Moved "${removed.name}" to ${realCat.name} → ${realCat.subcategories[0].name}`, 'success');
+    showToast(`Moved "${removed.name}" to ${realCat.name}`, 'success');
     render(document.getElementById('km-search').value);
     return;
   }
@@ -559,7 +626,73 @@ function onDragEnd() {
 
 
 // ======================================================
-//  ADD SUBCATEGORY / KEY MEASURE MODALS (unchanged)
+//  4. CATEGORY-LEVEL KEY MEASURE DRAG & DROP
+// ======================================================
+function onCatLevelKMDragStart(e, km, cat) {
+  e.stopPropagation();
+  dragState = { type: 'keymeasure', id: km.id, sourceCatId: cat.id, sourceScId: null, catLevel: true };
+  e.dataTransfer.effectAllowed = 'move';
+  const ghost = document.getElementById('drag-ghost');
+  ghost.innerHTML = `<span class="ghost-icon"><i class="fa-solid fa-ruler-combined"></i></span>${km.name}`;
+  ghost.classList.add('visible');
+  e.dataTransfer.setDragImage(ghost, 0, 0);
+  setTimeout(() => { const el = document.querySelector(`[data-km-id="${km.id}"]`); if (el) el.classList.add('dragging'); }, 0);
+}
+
+function onCatLevelKMDragOver(e, container, cat) {
+  if (!dragState || dragState.type !== 'keymeasure') return;
+  e.preventDefault();
+  e.stopPropagation();
+  e.dataTransfer.dropEffect = 'move';
+  container.classList.remove('drop-invalid');
+
+  const items = [...container.querySelectorAll('.km-item:not(.dragging)')];
+  const insertBefore = getInsertBeforeElement(items, e.clientY);
+  clearIndicators(container);
+  if (!insertBefore && items.length === 0) {
+    container.classList.add('drop-target-highlight');
+  } else {
+    const indicator = document.createElement('div');
+    indicator.className = 'drop-indicator';
+    if (insertBefore) { container.insertBefore(indicator, insertBefore); }
+    else { container.appendChild(indicator); }
+  }
+}
+
+function onCatLevelKMDragLeave(e, container) {
+  container.classList.remove('drop-target-highlight', 'drop-invalid');
+  clearIndicators(container);
+}
+
+function onCatLevelKMDrop(e, container, targetCat) {
+  e.preventDefault();
+  e.stopPropagation();
+  container.classList.remove('drop-target-highlight', 'drop-invalid');
+  clearIndicators(container);
+  if (!dragState || dragState.type !== 'keymeasure') return;
+
+  const kmObj = findKM(dragState.id);
+  const wasActive = kmObj ? kmObj.active : false;
+  const items = [...container.querySelectorAll('.km-item:not(.dragging)')];
+  const insertBefore = getInsertBeforeElement(items, e.clientY);
+  let insertIndex = insertBefore ? items.indexOf(insertBefore) : items.length;
+  const removed = removeKM(dragState.id);
+  if (!removed) return;
+  if (wasActive) removed.active = true;
+
+  const realCat = findCategory(targetCat.id);
+  if (!realCat) return;
+  if (!realCat.keyMeasures) realCat.keyMeasures = [];
+  insertIndex = Math.min(insertIndex, realCat.keyMeasures.length);
+  realCat.keyMeasures.splice(insertIndex, 0, removed);
+
+  showToast(`Moved "${removed.name}" to ${realCat.name}`, 'success');
+  render(document.getElementById('km-search').value);
+}
+
+
+// ======================================================
+//  ADD SUBCATEGORY / KEY MEASURE MODALS
 // ======================================================
 function showAddSubcategoryModal(cat) {
   const overlay = document.createElement('div');
@@ -673,6 +806,77 @@ function showAddKMModal(sc, cat) {
   overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
 }
 
+function showAddKMToCategoryModal(cat) {
+  const colorOptions = ['#1a47ba', '#e84393', '#6c5ce7', '#e17055', '#00b894', '#fdcb6e', '#d63031', '#0984e3'];
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h4>Add Key Measure to "${cat.name}"</h4>
+      <label>Name</label>
+      <input type="text" id="modal-km-name" placeholder="e.g. 2x14 LVL" autofocus>
+      <label>Tool Type</label>
+      <select id="modal-km-tool">
+        <option value="Count">Count</option>
+        <option value="Linear" selected>Linear</option>
+        <option value="Area">Area</option>
+      </select>
+      <label>Unit</label>
+      <select id="modal-km-unit">
+        <option value="EA">EA</option>
+        <option value="LF" selected>LF</option>
+        <option value="SF">SF</option>
+        <option value="SQ">SQ</option>
+      </select>
+      <label>Color</label>
+      <div style="display:flex;gap:6px;margin-top:4px;" id="modal-color-picks">
+        ${colorOptions.map((c, i) => `<span data-color="${c}" style="width:22px;height:22px;border-radius:4px;background:${c};cursor:pointer;border:2px solid ${i === 0 ? '#333' : 'transparent'};display:inline-block;" class="color-pick ${i === 0 ? 'selected' : ''}"></span>`).join('')}
+      </div>
+      <div class="modal-btns">
+        <button class="cancel">Cancel</button>
+        <button class="primary">Add Key Measure</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  const inp = overlay.querySelector('#modal-km-name');
+  inp.focus();
+
+  let selectedColor = colorOptions[0];
+  overlay.querySelectorAll('.color-pick').forEach(el => {
+    el.onclick = () => {
+      overlay.querySelectorAll('.color-pick').forEach(p => p.style.borderColor = 'transparent');
+      el.style.borderColor = '#333';
+      selectedColor = el.dataset.color;
+    };
+  });
+
+  overlay.querySelector('.cancel').onclick = () => overlay.remove();
+  overlay.querySelector('.primary').onclick = () => {
+    const name = inp.value.trim();
+    if (!name) { inp.style.borderColor = '#e53935'; return; }
+    const tool = overlay.querySelector('#modal-km-tool').value;
+    const unit = overlay.querySelector('#modal-km-unit').value;
+    const newKM = {
+      id: 'km-' + Date.now(),
+      name,
+      toolType: tool,
+      unit,
+      colorCode: selectedColor,
+      active: false
+    };
+    const realCat = findCategory(cat.id);
+    if (!realCat.keyMeasures) realCat.keyMeasures = [];
+    realCat.keyMeasures.push(newKM);
+    realCat.expanded = true;
+    overlay.remove();
+    showToast(`Added "${name}" to ${cat.name}`, 'success');
+    render(document.getElementById('km-search').value);
+  };
+  inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') overlay.querySelector('.primary').click(); if (e.key === 'Escape') overlay.remove(); });
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+}
+
 // Top-level add category button
 document.getElementById('btn-add-top').addEventListener('click', () => {
   const overlay = document.createElement('div');
@@ -701,6 +905,7 @@ document.getElementById('btn-add-top').addEventListener('click', () => {
       type: 'category',
       colorCode: '#6c757d',
       expanded: true,
+      keyMeasures: [],
       subcategories: []
     });
     overlay.remove();
@@ -725,6 +930,13 @@ document.getElementById('tab-sections').addEventListener('click', () => {
   document.getElementById('tab-sections').classList.add('active');
   document.getElementById('tab-keymeasure').classList.remove('active');
   document.getElementById('km-tree').innerHTML = '<div style="padding:20px;color:#999;text-align:center;font-size:12px;">Sections view — not part of this prototype</div>';
+});
+
+// ===== Close dropdowns on outside click =====
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.cat-add-dropdown-wrapper')) {
+    document.querySelectorAll('.cat-add-dropdown.open').forEach(d => d.classList.remove('open'));
+  }
 });
 
 // ===== Init =====

@@ -10,6 +10,7 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: true,
+    keyMeasures: [],
     subcategories: [
       {
         id: "sf-framing-lvl",
@@ -56,6 +57,7 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
+    keyMeasures: [],
     subcategories: [
       {
         id: "sf-doors-ext",
@@ -91,6 +93,7 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
+    keyMeasures: [],
     subcategories: [
       {
         id: "sf-sill-main",
@@ -111,6 +114,7 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
+    keyMeasures: [],
     subcategories: [
       {
         id: "sf-drywall-main",
@@ -132,6 +136,7 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
+    keyMeasures: [],
     subcategories: [
       {
         id: "sf-insulation-main",
@@ -153,6 +158,7 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
+    keyMeasures: [],
     subcategories: [
       {
         id: "sf-roofing-shingles",
@@ -195,6 +201,7 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
+    keyMeasures: [],
     subcategories: [
       {
         id: "sf-sheathing-main",
@@ -215,6 +222,7 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
+    keyMeasures: [],
     subcategories: [
       {
         id: "sf-siding-main",
@@ -235,6 +243,7 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: true,
+    keyMeasures: [],
     subcategories: [
       {
         id: "sf-wallsext-framing",
@@ -266,6 +275,7 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
+    keyMeasures: [],
     subcategories: [
       {
         id: "sf-wallsint-main",
@@ -286,6 +296,7 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
+    keyMeasures: [],
     subcategories: [
       {
         id: "sf-windows-main",
@@ -307,6 +318,7 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
+    keyMeasures: [],
     subcategories: [
       {
         id: "sf-ewp-main",

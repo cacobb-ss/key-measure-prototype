@@ -70,8 +70,22 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sa
 .km-category-header .caret.open { transform: rotate(90deg); }
 .km-category-header .folder-icon { color: #8a9bb0; margin-right: 6px; font-size: 13px; flex-shrink: 0; }
 .km-category-header .cat-name { font-weight: 600; font-size: 12.5px; color: #2c3e50; flex: 1; letter-spacing: 0.2px; }
-.km-category-header .add-btn { opacity: 0; transition: opacity .15s; }
-.km-category-header:hover .add-btn { opacity: 1; }
+/* Category + button dropdown wrapper */
+.cat-add-dropdown-wrapper { position: relative; flex-shrink: 0; }
+.km-category-header .cat-add-dropdown-wrapper .add-btn { opacity: 0; transition: opacity .15s; }
+.km-category-header:hover .cat-add-dropdown-wrapper .add-btn { opacity: 1; }
+
+/* Dropdown menu */
+.cat-add-dropdown { display: none; position: absolute; top: 100%; right: 0; z-index: 200; min-width: 180px; background: #fff; border: 1px solid #ddd; border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.14); padding: 4px 0; margin-top: 2px; }
+.cat-add-dropdown.open { display: block; }
+.cat-add-dropdown-item { display: flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 12px; color: #3d5060; cursor: pointer; transition: background .12s; white-space: nowrap; }
+.cat-add-dropdown-item:hover { background: #f0f4f8; color: #1a3a5c; }
+.cat-add-dropdown-item i { width: 16px; text-align: center; color: #8a9bb0; font-size: 12px; }
+.cat-add-dropdown-item:hover i { color: #3a6d99; }
+
+/* Category-level Key Measures (directly under category, no subcategory) */
+.km-cat-level-kms { padding: 0; }
+.km-cat-level-kms .km-item.cat-level-km { padding-left: 32px; }
 
 /* Subcategory row */
 .km-subcategory { }
