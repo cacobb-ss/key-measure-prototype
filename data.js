@@ -10,11 +10,11 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: true,
-    subfolders: [
+    subcategories: [
       {
         id: "sf-framing-lvl",
         name: "LVL",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-framing",
         expanded: false,
         keyMeasures: [
@@ -26,7 +26,7 @@ const KEY_MEASURE_DATA = [
       {
         id: "sf-framing-syp",
         name: "SYP",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-framing",
         expanded: false,
         keyMeasures: [
@@ -38,7 +38,7 @@ const KEY_MEASURE_DATA = [
       {
         id: "sf-framing-general",
         name: "General",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-framing",
         expanded: true,
         keyMeasures: [
@@ -56,11 +56,11 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
-    subfolders: [
+    subcategories: [
       {
         id: "sf-doors-ext",
         name: "DOORS EXTERIOR",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-doors",
         expanded: false,
         keyMeasures: [
@@ -73,7 +73,7 @@ const KEY_MEASURE_DATA = [
       {
         id: "sf-doors-int",
         name: "DOORS INTERIOR",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-doors",
         expanded: false,
         keyMeasures: [
@@ -91,11 +91,11 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
-    subfolders: [
+    subcategories: [
       {
         id: "sf-sill-main",
         name: "SILL PLATE",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-sill",
         expanded: false,
         keyMeasures: [
@@ -111,11 +111,11 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
-    subfolders: [
+    subcategories: [
       {
         id: "sf-drywall-main",
         name: "DRYWALL",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-drywall",
         expanded: false,
         keyMeasures: [
@@ -132,11 +132,11 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
-    subfolders: [
+    subcategories: [
       {
         id: "sf-insulation-main",
         name: "INSULATION",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-insulation",
         expanded: false,
         keyMeasures: [
@@ -153,11 +153,11 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
-    subfolders: [
+    subcategories: [
       {
         id: "sf-roofing-shingles",
         name: "Shingles",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-roofing",
         expanded: false,
         keyMeasures: [
@@ -168,7 +168,7 @@ const KEY_MEASURE_DATA = [
       {
         id: "sf-roofing-underlay",
         name: "Underlayment",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-roofing",
         expanded: false,
         keyMeasures: [
@@ -179,7 +179,7 @@ const KEY_MEASURE_DATA = [
       {
         id: "sf-roofing-flashing",
         name: "Flashing & Trim",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-roofing",
         expanded: false,
         keyMeasures: [
@@ -195,11 +195,11 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
-    subfolders: [
+    subcategories: [
       {
         id: "sf-sheathing-main",
         name: "SHEATHING",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-sheathing",
         expanded: false,
         keyMeasures: [
@@ -215,11 +215,11 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
-    subfolders: [
+    subcategories: [
       {
         id: "sf-siding-main",
         name: "SIDING",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-siding",
         expanded: false,
         keyMeasures: [
@@ -235,11 +235,11 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: true,
-    subfolders: [
+    subcategories: [
       {
         id: "sf-wallsext-framing",
         name: "Framing",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-wallsext",
         expanded: true,
         keyMeasures: [
@@ -251,7 +251,7 @@ const KEY_MEASURE_DATA = [
       {
         id: "sf-wallsext-wrap",
         name: "House Wrap",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-wallsext",
         expanded: false,
         keyMeasures: [
@@ -266,11 +266,11 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
-    subfolders: [
+    subcategories: [
       {
         id: "sf-wallsint-main",
         name: "WALLS INTERIOR",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-wallsint",
         expanded: false,
         keyMeasures: [
@@ -286,11 +286,11 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
-    subfolders: [
+    subcategories: [
       {
         id: "sf-windows-main",
         name: "WINDOWS",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-windows",
         expanded: false,
         keyMeasures: [
@@ -307,11 +307,11 @@ const KEY_MEASURE_DATA = [
     type: "category",
     colorCode: "#6c757d",
     expanded: false,
-    subfolders: [
+    subcategories: [
       {
         id: "sf-ewp-main",
         name: "EWP (SKUs)",
-        type: "subfolder",
+        type: "subcategory",
         categoryId: "cat-ewp",
         expanded: false,
         keyMeasures: [

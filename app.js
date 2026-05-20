@@ -1,11 +1,11 @@
 /**
- * Key Measure Sidebar — Interactive Prototype v2
+ * Key Measure Sidebar — Interactive Prototype v3
  *
  * Updated to match reference PLBM UI:
- *  - Grey folder icons for categories & subfolders
+ *  - Grey folder icons for categories & subcategories
  *  - Color bars on the RIGHT side of Key Measures
  *  - Tool-type icons (grid, wrench) on the left of Key Measures
- *  - "+" buttons to add Subfolders (on category hover) and Key Measures (on subfolder hover)
+ *  - "+" buttons to add Subcategories (on category hover) and Key Measures (on subcategory hover)
  *  - Drag-and-drop preserved
  */
 
@@ -27,14 +27,14 @@ function render(filter = '') {
   const lc = filter.toLowerCase();
 
   data.forEach(cat => {
-    let visibleSubfolders = cat.subfolders.map(sf => {
+    let visibleSubcategories = cat.subcategories.map(sc => {
       const filteredKMs = lc
-        ? sf.keyMeasures.filter(km => km.name.toLowerCase().includes(lc) || sf.name.toLowerCase().includes(lc))
-        : sf.keyMeasures;
-      return { ...sf, keyMeasures: filteredKMs };
-    }).filter(sf => sf.keyMeasures.length > 0 || sf.name.toLowerCase().includes(lc));
+        ? sc.keyMeasures.filter(km => km.name.toLowerCase().includes(lc) || sc.name.toLowerCase().includes(lc))
+        : sc.keyMeasures;
+      return { ...sc, keyMeasures: filteredKMs };
+    }).filter(sc => sc.keyMeasures.length > 0 || sc.name.toLowerCase().includes(lc));
 
-    if (lc && visibleSubfolders.length === 0 && !cat.name.toLowerCase().includes(lc)) return;
+    if (lc && visibleSubcategories.length === 0 && !cat.name.toLowerCase().includes(lc)) return;
 
     const catEl = document.createElement('div');
     catEl.className = 'km-category';
@@ -47,7 +47,7 @@ function render(filter = '') {
       <span class="caret ${cat.expanded ? 'open' : ''}"><i class="fa-solid fa-caret-right"></i></span>
       <i class="fa-regular fa-folder-open folder-icon"></i>
       <span class="cat-name">${cat.name}</span>
-      <button class="add-btn" data-action="add-subfolder" data-cat-id="${cat.id}" title="Add subfolder to ${cat.name}"><i class="fa-solid fa-plus"></i></button>
+      <button class="add-btn" data-action="add-subcategory" data-cat-id="${cat.id}" title="Add subcategory to ${cat.name}"><i class="fa-solid fa-plus"></i></button>
     `;
     // Toggle expand (but not on + button)
     catHeader.addEventListener('click', (e) => {
@@ -58,7 +58,7 @@ function render(filter = '') {
     // + button handler
     catHeader.querySelector('.add-btn').addEventListener('click', (e) => {
       e.stopPropagation();
-      showAddSubfolderModal(cat);
+      showAddSubcategoryModal(cat);
     });
     catEl.appendChild(catHeader);
 
@@ -66,61 +66,61 @@ function render(filter = '') {
     const childrenEl = document.createElement('div');
     childrenEl.className = 'km-children' + (cat.expanded ? '' : ' collapsed');
 
-    (lc ? visibleSubfolders : cat.subfolders).forEach(sf => {
-      const sfEl = document.createElement('div');
-      sfEl.className = 'km-subfolder';
-      sfEl.dataset.sfId = sf.id;
-      sfEl.dataset.catId = cat.id;
+    (lc ? visibleSubcategories : cat.subcategories).forEach(sc => {
+      const scEl = document.createElement('div');
+      scEl.className = 'km-subcategory';
+      scEl.dataset.scId = sc.id;
+      scEl.dataset.catId = cat.id;
 
-      // Subfolder header
-      const sfHeader = document.createElement('div');
-      sfHeader.className = 'km-subfolder-header';
-      sfHeader.draggable = true;
-      sfHeader.dataset.sfId = sf.id;
-      sfHeader.dataset.catId = cat.id;
-      sfHeader.innerHTML = `
+      // Subcategory header
+      const scHeader = document.createElement('div');
+      scHeader.className = 'km-subcategory-header';
+      scHeader.draggable = true;
+      scHeader.dataset.scId = sc.id;
+      scHeader.dataset.catId = cat.id;
+      scHeader.innerHTML = `
         <span class="drag-handle"><i class="fa-solid fa-grip-vertical"></i></span>
-        <span class="caret ${sf.expanded ? 'open' : ''}"><i class="fa-solid fa-caret-right"></i></span>
+        <span class="caret ${sc.expanded ? 'open' : ''}"><i class="fa-solid fa-caret-right"></i></span>
         <i class="fa-regular fa-folder folder-icon"></i>
-        <span class="sf-name">${sf.name}</span>
-        <button class="add-btn" data-action="add-km" data-sf-id="${sf.id}" data-cat-id="${cat.id}" title="Add key measure to ${sf.name}"><i class="fa-solid fa-plus"></i></button>
+        <span class="sc-name">${sc.name}</span>
+        <button class="add-btn" data-action="add-km" data-sc-id="${sc.id}" data-cat-id="${cat.id}" title="Add key measure to ${sc.name}"><i class="fa-solid fa-plus"></i></button>
       `;
 
       // Toggle expand
-      sfHeader.addEventListener('click', (e) => {
+      scHeader.addEventListener('click', (e) => {
         if (e.target.closest('.drag-handle') || e.target.closest('.add-btn')) return;
-        const real = findSubfolder(sf.id);
+        const real = findSubcategory(sc.id);
         if (real) { real.expanded = !real.expanded; render(filter); }
       });
       // + button for KMs
-      sfHeader.querySelector('.add-btn').addEventListener('click', (e) => {
+      scHeader.querySelector('.add-btn').addEventListener('click', (e) => {
         e.stopPropagation();
-        showAddKMModal(sf, cat);
+        showAddKMModal(sc, cat);
       });
 
-      // Subfolder drag events
-      sfHeader.addEventListener('dragstart', (e) => onSubfolderDragStart(e, sf, cat));
-      sfHeader.addEventListener('dragend', onDragEnd);
+      // Subcategory drag events
+      scHeader.addEventListener('dragstart', (e) => onSubcategoryDragStart(e, sc, cat));
+      scHeader.addEventListener('dragend', onDragEnd);
 
-      sfEl.appendChild(sfHeader);
+      scEl.appendChild(scHeader);
 
       // Key Measures container
       const kmsEl = document.createElement('div');
-      kmsEl.className = 'km-children' + (sf.expanded ? '' : ' collapsed');
-      kmsEl.dataset.sfId = sf.id;
+      kmsEl.className = 'km-children' + (sc.expanded ? '' : ' collapsed');
+      kmsEl.dataset.scId = sc.id;
       kmsEl.dataset.catId = cat.id;
 
-      kmsEl.addEventListener('dragover', (e) => onKMDragOver(e, kmsEl, sf, cat));
+      kmsEl.addEventListener('dragover', (e) => onKMDragOver(e, kmsEl, sc, cat));
       kmsEl.addEventListener('dragleave', (e) => onKMDragLeave(e, kmsEl));
-      kmsEl.addEventListener('drop', (e) => onKMDrop(e, kmsEl, sf, cat));
+      kmsEl.addEventListener('drop', (e) => onKMDrop(e, kmsEl, sc, cat));
 
-      const kmsToRender = lc ? sf.keyMeasures.filter(km => km.name.toLowerCase().includes(lc) || sf.name.toLowerCase().includes(lc)) : sf.keyMeasures;
+      const kmsToRender = lc ? sc.keyMeasures.filter(km => km.name.toLowerCase().includes(lc) || sc.name.toLowerCase().includes(lc)) : sc.keyMeasures;
       kmsToRender.forEach(km => {
         const kmEl = document.createElement('div');
         kmEl.className = 'km-item' + (km.active ? ' active-measure' : '');
         kmEl.draggable = true;
         kmEl.dataset.kmId = km.id;
-        kmEl.dataset.sfId = sf.id;
+        kmEl.dataset.scId = sc.id;
         kmEl.dataset.catId = cat.id;
 
         const iconClass = TOOL_ICONS[km.toolType] || 'fa-solid fa-circle';
@@ -131,20 +131,20 @@ function render(filter = '') {
           <span class="km-color-bar" style="background:${km.colorCode}"></span>
         `;
 
-        kmEl.addEventListener('dragstart', (e) => onKMDragStart(e, km, sf, cat));
+        kmEl.addEventListener('dragstart', (e) => onKMDragStart(e, km, sc, cat));
         kmEl.addEventListener('dragend', onDragEnd);
         kmEl.addEventListener('click', () => { toggleActive(km); render(filter); });
 
         kmsEl.appendChild(kmEl);
       });
 
-      sfEl.appendChild(kmsEl);
+      scEl.appendChild(kmsEl);
 
-      // Subfolder-level drop target for reordering subfolders
-      sfEl.addEventListener('dragover', (e) => onSubfolderDragOver(e, sfEl, sf, cat));
-      sfEl.addEventListener('drop', (e) => onSubfolderDrop(e, sf, cat));
+      // Subcategory-level drop target for reordering subcategories
+      scEl.addEventListener('dragover', (e) => onSubcategoryDragOver(e, scEl, sc, cat));
+      scEl.addEventListener('drop', (e) => onSubcategoryDrop(e, sc, cat));
 
-      childrenEl.appendChild(sfEl);
+      childrenEl.appendChild(scEl);
     });
 
     catEl.appendChild(childrenEl);
@@ -154,24 +154,24 @@ function render(filter = '') {
 
 // ===== Helpers =====
 function findCategory(catId) { return data.find(c => c.id === catId); }
-function findSubfolder(sfId) {
-  for (const cat of data) { const sf = cat.subfolders.find(s => s.id === sfId); if (sf) return sf; }
+function findSubcategory(scId) {
+  for (const cat of data) { const sc = cat.subcategories.find(s => s.id === scId); if (sc) return sc; }
   return null;
 }
 function findKM(kmId) {
-  for (const cat of data) for (const sf of cat.subfolders) { const km = sf.keyMeasures.find(k => k.id === kmId); if (km) return km; }
+  for (const cat of data) for (const sc of cat.subcategories) { const km = sc.keyMeasures.find(k => k.id === kmId); if (km) return km; }
   return null;
 }
 function removeKM(kmId) {
-  for (const cat of data) for (const sf of cat.subfolders) {
-    const idx = sf.keyMeasures.findIndex(k => k.id === kmId);
-    if (idx >= 0) { return sf.keyMeasures.splice(idx, 1)[0]; }
+  for (const cat of data) for (const sc of cat.subcategories) {
+    const idx = sc.keyMeasures.findIndex(k => k.id === kmId);
+    if (idx >= 0) { return sc.keyMeasures.splice(idx, 1)[0]; }
   }
 }
 
 function toggleActive(km) {
   const wasActive = km.active;
-  data.forEach(c => c.subfolders.forEach(s => s.keyMeasures.forEach(k => k.active = false)));
+  data.forEach(c => c.subcategories.forEach(s => s.keyMeasures.forEach(k => k.active = false)));
   if (!wasActive) { km.active = true; showToast(`Now measuring: ${km.name}`, 'success'); }
   else { showToast('Measurement stopped', ''); }
 }
@@ -189,55 +189,55 @@ function showToast(msg, type = '') {
 }
 
 // ======================================================
-//  ADD SUBFOLDER / KEY MEASURE MODALS
+//  ADD SUBCATEGORY / KEY MEASURE MODALS
 // ======================================================
-function showAddSubfolderModal(cat) {
+function showAddSubcategoryModal(cat) {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.innerHTML = `
     <div class="modal-box">
-      <h4>Add Subfolder to "${cat.name}"</h4>
-      <label>Subfolder Name</label>
-      <input type="text" id="modal-sf-name" placeholder="e.g. Framing, Shingles..." autofocus>
+      <h4>Add Subcategory to "${cat.name}"</h4>
+      <label>Subcategory Name</label>
+      <input type="text" id="modal-sc-name" placeholder="e.g. Framing, Shingles..." autofocus>
       <div class="modal-btns">
         <button class="cancel">Cancel</button>
-        <button class="primary">Add Subfolder</button>
+        <button class="primary">Add Subcategory</button>
       </div>
     </div>
   `;
   document.body.appendChild(overlay);
-  const inp = overlay.querySelector('#modal-sf-name');
+  const inp = overlay.querySelector('#modal-sc-name');
   inp.focus();
   overlay.querySelector('.cancel').onclick = () => overlay.remove();
   overlay.querySelector('.primary').onclick = () => {
     const name = inp.value.trim();
     if (!name) { inp.style.borderColor = '#e53935'; return; }
-    const newSf = {
-      id: 'sf-' + Date.now(),
+    const newSc = {
+      id: 'sc-' + Date.now(),
       name,
-      type: 'subfolder',
+      type: 'subcategory',
       categoryId: cat.id,
       expanded: true,
       keyMeasures: []
     };
     const realCat = findCategory(cat.id);
-    realCat.subfolders.push(newSf);
+    realCat.subcategories.push(newSc);
     realCat.expanded = true;
     overlay.remove();
-    showToast(`Added subfolder "${name}"`, 'success');
+    showToast(`Added subcategory "${name}"`, 'success');
     render(document.getElementById('km-search').value);
   };
   inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') overlay.querySelector('.primary').click(); if (e.key === 'Escape') overlay.remove(); });
   overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
 }
 
-function showAddKMModal(sf, cat) {
+function showAddKMModal(sc, cat) {
   const colorOptions = ['#1a47ba', '#e84393', '#6c5ce7', '#e17055', '#00b894', '#fdcb6e', '#d63031', '#0984e3'];
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.innerHTML = `
     <div class="modal-box">
-      <h4>Add Key Measure to "${sf.name}"</h4>
+      <h4>Add Key Measure to "${sc.name}"</h4>
       <label>Name</label>
       <input type="text" id="modal-km-name" placeholder="e.g. 2x14 LVL" autofocus>
       <label>Tool Type</label>
@@ -290,14 +290,14 @@ function showAddKMModal(sf, cat) {
       colorCode: selectedColor,
       active: false
     };
-    const realSf = findSubfolder(sf.id);
-    realSf.keyMeasures.push(newKM);
-    realSf.expanded = true;
+    const realSc = findSubcategory(sc.id);
+    realSc.keyMeasures.push(newKM);
+    realSc.expanded = true;
     // Also expand parent category
     const realCat = findCategory(cat.id);
     if (realCat) realCat.expanded = true;
     overlay.remove();
-    showToast(`Added "${name}" to ${sf.name}`, 'success');
+    showToast(`Added "${name}" to ${sc.name}`, 'success');
     render(document.getElementById('km-search').value);
   };
   inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') overlay.querySelector('.primary').click(); if (e.key === 'Escape') overlay.remove(); });
@@ -332,7 +332,7 @@ document.getElementById('btn-add-top').addEventListener('click', () => {
       type: 'category',
       colorCode: '#6c757d',
       expanded: true,
-      subfolders: []
+      subcategories: []
     });
     overlay.remove();
     showToast(`Added category "${name.toUpperCase()}"`, 'success');
@@ -345,9 +345,9 @@ document.getElementById('btn-add-top').addEventListener('click', () => {
 // ======================================================
 //  KEY MEASURE DRAG & DROP
 // ======================================================
-function onKMDragStart(e, km, sf, cat) {
+function onKMDragStart(e, km, sc, cat) {
   e.stopPropagation();
-  dragState = { type: 'keymeasure', id: km.id, categoryId: cat.id, sourceSfId: sf.id };
+  dragState = { type: 'keymeasure', id: km.id, categoryId: cat.id, sourceScId: sc.id };
   e.dataTransfer.effectAllowed = 'move';
   const ghost = document.getElementById('drag-ghost');
   ghost.innerHTML = `<span class="ghost-icon"><i class="fa-solid fa-ruler-combined"></i></span>${km.name}`;
@@ -356,7 +356,7 @@ function onKMDragStart(e, km, sf, cat) {
   setTimeout(() => { const el = document.querySelector(`[data-km-id="${km.id}"]`); if (el) el.classList.add('dragging'); }, 0);
 }
 
-function onKMDragOver(e, container, sf, cat) {
+function onKMDragOver(e, container, sc, cat) {
   if (!dragState || dragState.type !== 'keymeasure') return;
   e.preventDefault();
   e.stopPropagation();
@@ -387,7 +387,7 @@ function onKMDragLeave(e, container) {
   clearIndicators(container);
 }
 
-function onKMDrop(e, container, targetSf, cat) {
+function onKMDrop(e, container, targetSc, cat) {
   e.preventDefault();
   e.stopPropagation();
   container.classList.remove('drop-target-highlight', 'drop-invalid');
@@ -405,60 +405,60 @@ function onKMDrop(e, container, targetSf, cat) {
   const removed = removeKM(dragState.id);
   if (!removed) return;
   if (wasActive) removed.active = true;
-  const realSf = findSubfolder(targetSf.id);
-  if (!realSf) return;
-  insertIndex = Math.min(insertIndex, realSf.keyMeasures.length);
-  realSf.keyMeasures.splice(insertIndex, 0, removed);
-  showToast(`Moved "${removed.name}" to ${realSf.name}`, 'success');
+  const realSc = findSubcategory(targetSc.id);
+  if (!realSc) return;
+  insertIndex = Math.min(insertIndex, realSc.keyMeasures.length);
+  realSc.keyMeasures.splice(insertIndex, 0, removed);
+  showToast(`Moved "${removed.name}" to ${realSc.name}`, 'success');
   render(document.getElementById('km-search').value);
 }
 
 // ======================================================
-//  SUBFOLDER DRAG & DROP
+//  SUBCATEGORY DRAG & DROP
 // ======================================================
-function onSubfolderDragStart(e, sf, cat) {
+function onSubcategoryDragStart(e, sc, cat) {
   if (e.target.closest('.km-item')) return;
   e.stopPropagation();
-  dragState = { type: 'subfolder', id: sf.id, categoryId: cat.id };
+  dragState = { type: 'subcategory', id: sc.id, categoryId: cat.id };
   e.dataTransfer.effectAllowed = 'move';
   const ghost = document.getElementById('drag-ghost');
-  ghost.innerHTML = `<span class="ghost-icon"><i class="fa-solid fa-folder"></i></span>${sf.name}`;
+  ghost.innerHTML = `<span class="ghost-icon"><i class="fa-solid fa-folder"></i></span>${sc.name}`;
   ghost.classList.add('visible');
   e.dataTransfer.setDragImage(ghost, 0, 0);
   setTimeout(() => {
-    const el = document.querySelector(`.km-subfolder[data-sf-id="${sf.id}"]`);
+    const el = document.querySelector(`.km-subcategory[data-sc-id="${sc.id}"]`);
     if (el) el.classList.add('dragging');
   }, 0);
 }
 
-function onSubfolderDragOver(e, sfEl, sf, cat) {
-  if (!dragState || dragState.type !== 'subfolder') return;
+function onSubcategoryDragOver(e, scEl, sc, cat) {
+  if (!dragState || dragState.type !== 'subcategory') return;
   if (dragState.categoryId !== cat.id) return;
   e.preventDefault();
   e.stopPropagation();
   e.dataTransfer.dropEffect = 'move';
-  const catChildren = sfEl.parentElement;
-  clearSubfolderIndicators(catChildren);
-  const rect = sfEl.getBoundingClientRect();
+  const catChildren = scEl.parentElement;
+  clearSubcategoryIndicators(catChildren);
+  const rect = scEl.getBoundingClientRect();
   const midY = rect.top + rect.height / 2;
   const indicator = document.createElement('div');
-  indicator.className = 'subfolder-drop-zone';
-  if (e.clientY < midY) { catChildren.insertBefore(indicator, sfEl); }
-  else { catChildren.insertBefore(indicator, sfEl.nextSibling); }
+  indicator.className = 'subcategory-drop-zone';
+  if (e.clientY < midY) { catChildren.insertBefore(indicator, scEl); }
+  else { catChildren.insertBefore(indicator, scEl.nextSibling); }
 }
 
-function onSubfolderDrop(e, targetSf, cat) {
+function onSubcategoryDrop(e, targetSc, cat) {
   e.preventDefault();
   e.stopPropagation();
-  if (!dragState || dragState.type !== 'subfolder') return;
+  if (!dragState || dragState.type !== 'subcategory') return;
   if (dragState.categoryId !== cat.id) return;
   const realCat = findCategory(cat.id);
   if (!realCat) return;
-  const fromIdx = realCat.subfolders.findIndex(s => s.id === dragState.id);
-  const toIdx = realCat.subfolders.findIndex(s => s.id === targetSf.id);
+  const fromIdx = realCat.subcategories.findIndex(s => s.id === dragState.id);
+  const toIdx = realCat.subcategories.findIndex(s => s.id === targetSc.id);
   if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) { render(document.getElementById('km-search').value); return; }
-  const [moved] = realCat.subfolders.splice(fromIdx, 1);
-  realCat.subfolders.splice(toIdx, 0, moved);
+  const [moved] = realCat.subcategories.splice(fromIdx, 1);
+  realCat.subcategories.splice(toIdx, 0, moved);
   showToast(`Reordered "${moved.name}" in ${realCat.name}`, 'success');
   render(document.getElementById('km-search').value);
 }
@@ -468,7 +468,7 @@ function onDragEnd() {
   document.getElementById('drag-ghost').classList.remove('visible');
   document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
   document.querySelectorAll('.drop-target-highlight, .drop-invalid').forEach(el => el.classList.remove('drop-target-highlight', 'drop-invalid'));
-  document.querySelectorAll('.drop-indicator, .subfolder-drop-zone').forEach(el => el.remove());
+  document.querySelectorAll('.drop-indicator, .subcategory-drop-zone').forEach(el => el.remove());
   dragState = null;
 }
 
@@ -485,7 +485,7 @@ function getInsertBeforeElement(items, y) {
 }
 
 function clearIndicators(container) { container.querySelectorAll('.drop-indicator').forEach(el => el.remove()); }
-function clearSubfolderIndicators(container) { container.querySelectorAll('.subfolder-drop-zone').forEach(el => el.remove()); }
+function clearSubcategoryIndicators(container) { container.querySelectorAll('.subcategory-drop-zone').forEach(el => el.remove()); }
 
 // ===== Search =====
 document.getElementById('km-search').addEventListener('input', (e) => { render(e.target.value); });
